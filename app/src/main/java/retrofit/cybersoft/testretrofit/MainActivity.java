@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
             return true;
         } else if( id == R.id.action_second) {
             startActivity(new Intent(this,SecondActivity.class));
+        } else if( id == R.id.action_user) {
+            startActivity(new Intent(this,UserListActivity.class));
         } else if(id == R.id.action_signout) {
             signOutUser();
         }

@@ -44,6 +44,10 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="action_signout">Signout</string>
+    <string name="name">Name</string>
+    <string name="action_save">Save</string>
+    <string name="user_details">user_details</string>
+    <string name="action_user">Users</string>
 </resources>
 
 
