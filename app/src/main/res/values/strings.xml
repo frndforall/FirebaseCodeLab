@@ -48,6 +48,7 @@
     <string name="action_save">Save</string>
     <string name="user_details">user_details</string>
     <string name="action_user">Users</string>
+    <string name="action_rate_app">Rate The App</string>
 </resources>
 
 

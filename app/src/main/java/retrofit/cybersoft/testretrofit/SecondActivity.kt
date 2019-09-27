@@ -13,18 +13,18 @@ class SecondActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_second)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
+        val toolbar = findViewById<Toolbar>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        val click = findViewById(R.id.click_me) as Button
-        val text = findViewById(R.id.title_text) as TextView
+        val click = findViewById<Button>(R.id.click_me) as Button
+        val text = findViewById<TextView>(R.id.title_text) as TextView
 
         click.setOnClickListener {
 
             text.setText(""+add(10,20));
         }
 
-        val fab = findViewById(R.id.fab) as FloatingActionButton
+        val fab = findViewById<FloatingActionButton>(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()

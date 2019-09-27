@@ -28,7 +28,7 @@ import org.jsoup.Jsoup;
 
 import java.util.UUID;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import me.tatarka.support.job.JobInfo;
 import retrofit.Call;
@@ -39,7 +39,7 @@ import retrofit.Retrofit;
 
 public class MainActivity extends AppCompatActivity implements Callback<StackQuestions> {
 
-    @Bind(R.id.question_list)
+    @BindView(R.id.question_list)
     ListView questionList;
     ProgressDialog pd;
 
@@ -79,11 +79,6 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
 
     @Override
     protected void onStart() {
-        // Monitor launch times and interval from installation
-//        configRateApp();
-//        RateThisApp.onStart(this);
-        // If the criteria is satisfied, "Rate this app" dialog will be shown
-//        RateThisApp.showRateDialogIfNeeded(this);
         super.onStart();
     }
 
@@ -91,9 +86,7 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
         RateThisApp.Config config = new RateThisApp.Config(3, 5);
         config.setTitle(R.string.rate_title);
         config.setMessage(R.string.rate_message);
-//        config.setYesButtonText(R.string.rate_yes);
-//        config.setNoButtonText(R.string.rate_no);
-//        config.setCancelButtonText(R.string.rate_cancel);
+
         RateThisApp.init(config);
     }
 
@@ -121,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
             startActivity(new Intent(this,UserListActivity.class));
         } else if(id == R.id.action_signout) {
             signOutUser();
+        } else if(id == R.id.action_rate) {
+            configRateApp();
         }
 
         return super.onOptionsItemSelected(item);
@@ -147,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
 
     public void getFeeds(){
         pd = ProgressDialog.show(this,"Loading...",null,true,false);
+//        Progress progress = new Progress(context);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.stackexchange.com")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -158,28 +154,6 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
         Call<StackQuestions> call = stackOverflowAPI.loadQuestions("android");
         //asynchronous call
         call.enqueue(this);
-//        NotificationManager mNotifyManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
-////        if(title!=null && title.length()<15){
-////            mBuilder.setContentTitle(title);
-////        } else {
-////            mBuilder.setContentTitle(getString(R.string.app_name));
-////        }
-//        mBuilder.setSmallIcon(R.drawable.ic_cast_dark);
-//        mBuilder.setContentText("Test Message");
-//        Intent resultIntent = new Intent(this, SMSActivity.class);
-//
-////        if(customData!=null){           // This is json payload. Need to act on this to proceed further
-////            YLog.d(TAG," data "+customData);
-////            resultIntent.putExtra(YottaConstants.PUSH_TYPE, Integer.parseInt(customData));
-////            notificationId = getNotificationId(Integer.parseInt(customData));
-////        }
-//
-//
-//        PendingIntent resultPendingIntent = PendingIntent.getActivity(this,0 , resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        mBuilder.setAutoCancel(true);
-//        mBuilder.setContentIntent(resultPendingIntent);
-//        mNotifyManager.notify(0, mBuilder.build());
         Log.d("Test UUID", getUniquePhoneIdentity());
     }
 
