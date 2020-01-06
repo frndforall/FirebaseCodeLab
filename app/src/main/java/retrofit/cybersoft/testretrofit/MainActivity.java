@@ -1,10 +1,16 @@
 package retrofit.cybersoft.testretrofit;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,11 +25,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.kobakei.ratethisapp.RateThisApp;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jsoup.Jsoup;
 
 import java.util.UUID;
@@ -43,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
     ListView questionList;
     ProgressDialog pd;
 
-    ComponentName myServiceComponent;
     MyJobService myService;
     Handler myHandler = new Handler(){
         @Override
@@ -52,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
             myService.setUICallback(MainActivity.this);
         }
     };
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,16 +82,38 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
                 startActivity(i);
             }
         });
-        myServiceComponent = new ComponentName(this, MyJobService.class);
         Intent myServiceIntent = new Intent(this, MyJobService.class);
         myServiceIntent.putExtra("messenger", new Messenger(myHandler));
         startService(myServiceIntent);
 
     }
 
+
+
     @Override
     protected void onStart() {
         super.onStart();
+        EventBus.getDefault().register(this);
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            registerNetworkCallback(this);
+        } else {
+            IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+            NetworkChangeReceiver receiver = new NetworkChangeReceiver();
+            registerReceiver(receiver,filter);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            registerNetworkCallback(this);
+        } else {
+            IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+            NetworkChangeReceiver receiver = new NetworkChangeReceiver();
+            registerReceiver(receiver,filter);
+        }
     }
 
     private void configRateApp(){
@@ -192,14 +226,6 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
     }
 
 
-    public void setJobScheduler(){
-        JobInfo.Builder builder = new JobInfo.Builder(0, myServiceComponent);
-        //builder.setRequiresCharging(true);
-        //builder.setRequiresDeviceIdle(true);
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED);
-        myService.scheduleJob(builder.build());
-    }
-
     private class GetVersionCode extends AsyncTask<Void, String, String> {
         @Override
         protected String doInBackground(Void... voids) {
@@ -234,4 +260,49 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
             Log.d("update", "Current version " + currentVersion + "playstore version " + onlineVersion);
         }
     };
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void registerNetworkCallback(Context context) {
+        final ConnectivityManager manager =
+                (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+        if(manager!=null) {
+            manager.registerNetworkCallback(
+                    new NetworkRequest.Builder()
+                            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                            .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+                            .build(),
+                    new ConnectivityManager.NetworkCallback() {
+                        @Override
+                        public void onAvailable(Network network) {
+                            EventBus.getDefault().post(new NetworkEvent(true));
+                        }
+
+                        @Override
+                        public void onUnavailable() {
+                            super.onUnavailable();
+                            EventBus.getDefault().post(new NetworkEvent(false));
+                        }
+
+                        @Override
+                        public void onLost(Network network) {
+                            super.onLost(network);
+                            EventBus.getDefault().post(new NetworkEvent(false));
+                        }
+
+                        @Override
+                        public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                            super.onCapabilitiesChanged(network, networkCapabilities);
+                        }
+                    });
+        }
+    }
+
+    @Subscribe (threadMode =  ThreadMode.MAIN)
+    public void onMessageEvent(NetworkEvent event) {
+        if(event.isOnline) {
+            Toast.makeText(this,"Mobile is online", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this,"Mobile is offline", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
