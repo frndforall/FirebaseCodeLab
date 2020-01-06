@@ -226,40 +226,6 @@ public class MainActivity extends AppCompatActivity implements Callback<StackQue
     }
 
 
-    private class GetVersionCode extends AsyncTask<Void, String, String> {
-        @Override
-        protected String doInBackground(Void... voids) {
-
-            String newVersion = null;
-            try {
-                newVersion = Jsoup.connect("https://play.google.com/store/apps/details?id=net.cybersoft.yottatenant&hl=it")
-                        .timeout(30000)
-                        .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
-                        .referrer("http://www.google.com")
-                        .get()
-                        .select("div[itemprop=softwareVersion]")
-                        .first()
-                        .ownText();
-                return newVersion;
-            } catch (Exception e) {
-                return newVersion;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String onlineVersion) {
-            super.onPostExecute(onlineVersion);
-            String currentVersion = "1.4.0" ;
-            if (onlineVersion != null && !onlineVersion.isEmpty()) {
-                if (currentVersion.equalsIgnoreCase(onlineVersion)) {
-                    Log.d("Update Not Needed", "Current version " + currentVersion + "playstore version " + onlineVersion);
-                } else {
-                    Log.d("Update Needed", "Current version " + currentVersion + "playstore version " + onlineVersion);
-                }
-            }
-            Log.d("update", "Current version " + currentVersion + "playstore version " + onlineVersion);
-        }
-    };
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void registerNetworkCallback(Context context) {
